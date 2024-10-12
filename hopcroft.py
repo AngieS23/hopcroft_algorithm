@@ -13,9 +13,7 @@ transitions = { 0: {'a': 1, 'b': 2},
               } 
 accepting_states = {1, 3, 5}
 
-def visualize():
-  global initial_states, states, alphabet, transitions, accepting_states
-
+def visualize(states, transitions, accepting_states, initial_states, title):
   G = nx.DiGraph()
 
   for state in states:
@@ -39,28 +37,11 @@ def visualize():
   edge_labels = nx.get_edge_attributes(G, 'label')
   nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='black')
 
+  plt.title(title)
   plt.show()
 
-def print_initial(states, accepting_states, transitions):
-  print("Hopcroft minimization")
-  print(f"Accepting States: {accepting_states}")
-  print("Transitions:")
-  for state, trans in transitions.items():
-    print(f"\tState {state}:")
-    print("\t\t" + ", ".join(f"{symbol} -> {dest}" for symbol, dest in trans.items()))
-  print("\nStates before minimization _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ")
-  print(states)
-  visualize()
-
-def print_result(states):
-  print("\nStates after minimization _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ")
-  final_str = "{"
-  for i, state in enumerate(states):
-    final_str += str(set(state))
-    if i < len(states) - 1:
-      final_str += ", "
-  final_str += "}"
-  print(final_str)
+def update_transitions(states, transitions, initial_states, accepting_states):
+  pass
 
 def split(set_state, transitions, alphabet, actual_sets):
   memory = {}
@@ -79,12 +60,12 @@ def split(set_state, transitions, alphabet, actual_sets):
       memory[transition_tuple] = {state}
   return {frozenset(states_set) for states_set in memory.values()}
 
-def hopcroft_minimization(states, accepting_states, transitions, alphabet):
+def hopcroft_minimization(states, accepting_states, transitions, alphabet, initial_states):
   non_accepting_states = states - accepting_states
   states0 = {frozenset(non_accepting_states), frozenset(accepting_states)}
   states1 = {}
 
-  print_initial(states, accepting_states, transitions)
+  visualize(states, transitions, accepting_states, initial_states, "Initial DFA")
 
   while states1 != states0:
     states1 = states0.copy()
@@ -92,6 +73,7 @@ def hopcroft_minimization(states, accepting_states, transitions, alphabet):
     for set_state in states1:
       states0 = states0 | split(set_state, transitions, alphabet, states1)
 
-  print_result(states0)
+  final_transitions, final_accepting, final_initial = update_transitions(states0, transitions, initial_states, accepting_states)
+  visualize(states0, final_transitions, final_accepting, final_initial, "Minimized DFA")
 
-hopcroft_minimization(states, accepting_states, transitions, alphabet)
+hopcroft_minimization(states, accepting_states, transitions, alphabet, initial_states)
